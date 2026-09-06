@@ -8,6 +8,7 @@ package org.jetbrains.kotlin.gradle.plugin.mpp.apple.swiftimport
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.FileSystemOperations
+import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
 import org.gradle.api.provider.SetProperty
@@ -101,6 +102,9 @@ internal abstract class GenerateSyntheticLinkageImportProject : DefaultTask(), U
     @get:Inject
     abstract val fs: FileSystemOperations
 
+    @get:Inject
+    abstract val objects: ObjectFactory
+
     init {
         // The shared package cannot be declared as an output by every coordinated task. Its local output may still be
         // up-to-date after the root build directory is deleted, so explicitly invalidate the task when the shared marker disappears.
@@ -172,7 +176,7 @@ internal abstract class GenerateSyntheticLinkageImportProject : DefaultTask(), U
             "Expected shared synthetic package root is missing: $source"
         }
 
-        project.objects.fileTree().from(destination).visit { details ->
+        objects.fileTree().from(destination).visit { details ->
             if (!details.isDirectory) {
                 details.file.setWritable(true)
             }
@@ -183,7 +187,7 @@ internal abstract class GenerateSyntheticLinkageImportProject : DefaultTask(), U
             it.into(destination)
         }
 
-        project.objects.fileTree().from(source).visit { details ->
+        objects.fileTree().from(source).visit { details ->
             if (!details.isDirectory && !details.file.canWrite()) {
                 destination.resolve(details.relativePath.pathString).setReadOnly()
             }
